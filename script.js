@@ -3,6 +3,7 @@ window.onload = () => {
 	var trees = [];
 	var clouds = [];
 	var components = [];
+	var tick = 0;
 	setupCanvas();
 	var maxTrees = 10;
 	var maxClouds = 5;
@@ -12,20 +13,15 @@ window.onload = () => {
 	//makeScene();
 	console.log(components)
 	function makeScene() {
-		drawGround();
-		drawSky();
-		drawSun();
-		makeTrees();
-		drawTrees();
-		makeClouds();
-		drawClouds();
+		make();
+		render();
 		moveComponents();
 	}
 
 	function loop() {
 		clearcanvas();
 		makeScene();
-		console.log(components.length);
+		tick++;
 		window.requestAnimationFrame(loop);
 	}
 
@@ -43,15 +39,30 @@ window.onload = () => {
 				for (let j = 0; j < trees.length; j++) {
 					if (trees[j] == item) {
 						trees.splice(j, 1);
+						maxTrees++;
 					}
 				}
 				for (let j = 0; j < clouds.length; j++) {
 					if (clouds[j] == item) {
 						clouds.splice(j, 1);
+						maxClouds++;
 					}
 				}
 			}
 		}
+	}
+
+	function make() {
+		makeTrees();
+		makeClouds();
+	}
+
+	function render() {
+		drawSky();
+		drawGround();
+		drawSun();
+		drawTrees();
+		drawClouds();
 	}
 
 	function drawTrees() {
@@ -76,27 +87,37 @@ window.onload = () => {
 	}
 
 	function makeClouds() {
-		for (let i = 0; i < canvas.width; i++) {
-			if (maxClouds >= 1) {
-				if (random(1, 200) == 1) {
-					let y = random(30, 100);
-					let cloud = new Component(i, y);
-					cloud.type = "cloud";
-
-					for (let j = 0; j < random(5, 10); j++) {
-						let offset = 50;
-						let baby = new Component(cloud.x+random(-offset, offset), cloud.y+random(-offset, offset));
-						baby.type="babyCloud";
-						baby.size = random(10, 35);
-						cloud.children.push(baby);
+		if (tick==0) {
+			for (let i = 0; i < canvas.width; i++) {
+				if (maxClouds >= 1) {
+					if (random(1, 200) == 1) {
+						cloud(i);
+						i+=400;
 					}
-
-					clouds.push(cloud);
-					maxClouds--;
-					i+=400;
+				}
+			}
+		} else {
+			if (maxClouds >= 1) {
+				if (random(1, 100) == 1) {
+					cloud(canvas.width+20);
 				}
 			}
 		}
+	}
+
+	function cloud(x) {
+		let y = random(30, 100);
+		let cloud = new Component(x, y);
+		cloud.type = "cloud";
+		for (let j = 0; j < random(5, 10); j++) {
+			let offset = 50;
+			let baby = new Component(cloud.x+random(-offset, offset), cloud.y+random(-offset, offset));
+			baby.type="babyCloud";
+			baby.size = random(10, 35);
+			cloud.children.push(baby);
+		}
+		clouds.push(cloud);
+		maxClouds--;
 	}
 
 	function drawClouds() {
@@ -110,15 +131,6 @@ window.onload = () => {
 					ctx.arc(child.x, child.y, child.size, 0, 2*Math.PI);
 				}, false, true);
 			}
-
-			// canvasDraw(() => {
-			// 	ctx.fillStyle = "#FFFFFF";
-			// 	ctx.arc(x, y, 75, 0, 2*Math.PI);
-			// 	for (let j = 0; j < random(2, 10); j++) {
-			// 		ctx.arc(x+random(-30, 30), y+random(-30, 30), random(40, 75), 0, 2*Math.PI);
-			// 	}
-
-			// }, false, true);
 		}
 		
 	}
@@ -153,18 +165,30 @@ window.onload = () => {
 	}
 
 	function makeTrees() {
-		for (let i = 0; i < canvas.width; i++) {
+		if (tick==0) {
+			for (let i = 0; i < canvas.width; i++) {
+				if (maxTrees >= 1) {
+					if (random(1, 100) == 1) {
+						tree(i);
+						i+=100;
+					}
+				}
+			}
+		} else {
 			if (maxTrees >= 1) {
-				if (random(1, 100) == 1) {
-					let height = random(100, 300);
-					let tree = new Component(i, height);
-					tree.type="tree";
-					trees.push(tree);
-					maxTrees--;
-					i+=100;
+				if (random(1, 50) == 1) {
+					tree(canvas.width+20);
 				}
 			}
 		}
+	}
+
+	function tree(x) {
+		let height = random(100, 300);
+		let tree = new Component(x, height);
+		tree.type="tree";
+		trees.push(tree);
+		maxTrees--;
 	}
 
 	function Component(x, y) {
